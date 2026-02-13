@@ -3,22 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Romantic Proposal</title>
+<title>Romantic Town Proposal</title>
 <style>
-body,html{
-  margin:0; padding:0; overflow:hidden; font-family:sans-serif; background:linear-gradient(#FFDEE9,#B5FFFC);
-}
-canvas{position:fixed; top:0; left:0; width:100%; height:100%; z-index:0;}
+body,html{margin:0;padding:0;overflow:hidden;font-family:sans-serif;background:black;}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
 .container{
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  z-index:2; backdrop-filter:blur(10px); padding:30px 50px; border-radius:25px; text-align:center;
-  box-shadow:0 0 50px rgba(0,0,0,0.3);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:2;backdrop-filter:blur(12px) brightness(1.2);padding:40px 60px;border-radius:25px;text-align:center;
+  box-shadow:0 0 50px rgba(0,0,0,0.4);
 }
-h1{font-size:3rem; margin-bottom:15px; color:#ff6f91; text-shadow:0 0 10px #fff;}
-p{font-size:1.5rem; margin-bottom:30px; color:#fff; text-shadow:0 0 6px #ffdde9;}
+h1{font-size:3rem;margin-bottom:15px;color:#ff6f91;text-shadow:0 0 12px #fff;}
+p{font-size:1.5rem;margin-bottom:30px;color:#fff;text-shadow:0 0 8px #ffdde9;}
 button{
-  padding:15px 40px; font-size:1.3rem; margin:0 15px; border:none; border-radius:50px;
-  cursor:pointer; transition:0.3s; box-shadow:0 0 20px rgba(255,255,255,0.3);
+  padding:15px 40px;font-size:1.3rem;margin:0 15px;border:none;border-radius:50px;
+  cursor:pointer;transition:0.3s;box-shadow:0 0 20px rgba(255,255,255,0.3);
 }
 #yesBtn{background:#ff85a2;color:white;}
 #noBtn{background:#ff4e50;color:white;}
@@ -29,80 +27,88 @@ button:hover{transform:scale(1.15);}
 <canvas id="scene"></canvas>
 <div class="container">
   <h1>Will You Marry Me?</h1>
-  <p>Our love is a beautiful journey. ❤️</p>
+  <p>Let's walk through life together ❤️</p>
   <button id="yesBtn">Yes</button>
   <button id="noBtn">No</button>
 </div>
 <audio id="music" src="https://cdn.pixabay.com/audio/2023/07/11/audio_16d21a7f79.mp3" loop></audio>
 <script>
-const canvas = document.getElementById('scene');
-const ctx = canvas.getContext('2d');
+const canvas=document.getElementById('scene');
+const ctx=canvas.getContext('2d');
 canvas.width=window.innerWidth; canvas.height=window.innerHeight;
 
-// ===== Background Sky & Sun =====
-let sun={x:canvas.width*0.8, y:canvas.height*0.2, r:60};
+// ===== Sky & Sun =====
+let sun={x:canvas.width*0.8, y:canvas.height*0.2, r:70, dx:0.05};
 function drawSky(){
-  let grad = ctx.createLinearGradient(0,0,0,canvas.height);
+  let grad=ctx.createLinearGradient(0,0,0,canvas.height);
   grad.addColorStop(0,"#FFDEE9"); grad.addColorStop(1,"#B5FFFC");
   ctx.fillStyle=grad; ctx.fillRect(0,0,canvas.width,canvas.height);
-  // Sun
-  ctx.beginPath(); ctx.arc(sun.x,sun.y,sun.r,0,2*Math.PI);
-  ctx.fillStyle="yellow"; ctx.fill();
+  // Sun moving slowly
+  sun.x += sun.dx;
+  if(sun.x>canvas.width*1.2) sun.x=-100;
+  ctx.beginPath(); ctx.arc(sun.x,sun.y,sun.r,0,2*Math.PI); ctx.fillStyle="orange"; ctx.fill();
 }
 
-// ===== Flowers =====
-class Flower{
-  constructor(x,y){this.x=x; this.y=y; this.angle=Math.random()*Math.PI*2; this.speed=(Math.random()*0.02+0.01);}
-  draw(){ctx.beginPath(); for(let i=0;i<5;i++){
-    let a=this.angle+i*Math.PI*2/5; ctx.lineTo(this.x+Math.cos(a)*10,this.y+Math.sin(a)*10);}
-    ctx.fillStyle="#ff5da2"; ctx.fill();}
-  update(){this.angle+=this.speed; this.draw();}
+// ===== Buildings =====
+class Building{
+  constructor(x,w,h){this.x=x; this.w=w; this.h=h; this.color=`rgb(${100+Math.random()*155},${100+Math.random()*155},${100+Math.random()*155})`;}
+  draw(){ctx.fillStyle=this.color; ctx.fillRect(this.x,canvas.height-this.h,this.w,this.h);
+    for(let i=10;i<this.w-10;i+=20){for(let j=10;j<this.h-10;j+=25){
+      if(Math.random()>0.5){ctx.fillStyle="yellow"; ctx.fillRect(this.x+i,canvas.height-this.h+j,10,15);}
+    }}}
 }
-let flowers=[]; for(let i=0;i<30;i++){flowers.push(new Flower(Math.random()*canvas.width,canvas.height-50+Math.random()*20));}
+let buildings=[]; for(let i=0;i<12;i++){buildings.push(new Building(i*100+50,80,50+Math.random()*200));}
 
-// ===== Cartoon Couple =====
-let couple={x:canvas.width/2, y:canvas.height-120, w:50,h:100, dx:0};
+// ===== Trees & Flowers =====
+class Tree{constructor(x,y){this.x=x; this.y=y; this.height=40+Math.random()*30; this.color="green";}
+draw(){ctx.fillStyle="brown"; ctx.fillRect(this.x,this.y,this.height/8,this.height);ctx.beginPath(); ctx.arc(this.x+this.height/16,this.y, this.height/2,0,Math.PI*2); ctx.fillStyle=this.color; ctx.fill();}}
+let trees=[]; for(let i=0;i<18;i++){trees.push(new Tree(i*90+30,canvas.height-100));}
+
+class Flower{constructor(x,y){this.x=x; this.y=y; this.size=5+Math.random()*5; this.angle=Math.random()*Math.PI*2; this.speed=0.02;}
+draw(){ctx.beginPath(); for(let i=0;i<5;i++){let a=this.angle+i*Math.PI*2/5; ctx.lineTo(this.x+Math.cos(a)*this.size,this.y+Math.sin(a)*this.size);} ctx.fillStyle="#ff5da2"; ctx.fill();}
+update(){this.angle+=this.speed; this.draw();}}
+let flowers=[]; for(let i=0;i<25;i++){flowers.push(new Flower(Math.random()*canvas.width,canvas.height-60+Math.random()*20));}
+
+// ===== River =====
+function drawRiver(){
+  ctx.beginPath(); ctx.moveTo(0,canvas.height-50); ctx.bezierCurveTo(canvas.width/4,canvas.height-70,canvas.width*3/4,canvas.height-30,canvas.width,canvas.height-50);
+  ctx.lineTo(canvas.width,canvas.height); ctx.lineTo(0,canvas.height); ctx.closePath(); ctx.fillStyle="#3da4ab"; ctx.fill();
+}
+
+// ===== Couple =====
+let couple={x:100,y:canvas.height-120,w:20,h:50,dx:1};
 function drawCouple(){
-  // Body
-  ctx.fillStyle="#ffadad"; ctx.fillRect(couple.x,couple.y,couple.w,couple.h);
-  // Head
-  ctx.beginPath(); ctx.arc(couple.x+25,couple.y-20,20,0,2*Math.PI); ctx.fillStyle="#ffd6a5"; ctx.fill();
-  // Slight bobbing
-  couple.y += Math.sin(Date.now()/500)*0.5;
+  ctx.fillStyle="#ff6f91"; ctx.fillRect(couple.x,couple.y,couple.w,couple.h);
+  ctx.beginPath(); ctx.arc(couple.x+10,couple.y-10,10,0,2*Math.PI); ctx.fillStyle="#ffd6a5"; ctx.fill();
+  couple.x+=couple.dx; if(couple.x>canvas.width-50) couple.x=100;
 }
 
-// ===== Floating Hearts =====
-class Heart{constructor(x,y){this.x=x; this.y=y; this.alpha=1; this.size=10+Math.random()*10;}
-draw(){ctx.save(); ctx.globalAlpha=this.alpha;
-ctx.beginPath(); ctx.moveTo(this.x,this.y); ctx.bezierCurveTo(this.x,this.y-5,this.x-15,this.y-15,this.x,this.y-25);
-ctx.bezierCurveTo(this.x+15,this.y-15,this.x,this.y-5,this.x,this.y); ctx.fillStyle="red"; ctx.fill();
-ctx.restore();}
-update(){this.y-=0.5; this.alpha-=0.002; if(this.alpha<0)this.alpha=1; this.draw();}}
-let hearts=[]; for(let i=0;i<20;i++){hearts.push(new Heart(Math.random()*canvas.width,canvas.height-50));}
+// ===== Floating Sparkles & Petals =====
+class Sparkle{constructor(){this.x=Math.random()*canvas.width; this.y=Math.random()*canvas.height/2; this.alpha=Math.random(); this.size=1+Math.random()*2;}
+draw(){ctx.globalAlpha=this.alpha; ctx.fillStyle="white"; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;}
+update(){this.y-=0.3; this.alpha-=0.003; if(this.alpha<0){this.x=Math.random()*canvas.width; this.y=canvas.height/2; this.alpha=1;} this.draw();}}
+let sparkles=[]; for(let i=0;i<50;i++) sparkles.push(new Sparkle());
 
 // ===== Animate Scene =====
 function animate(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawSky();
-  flowers.forEach(f=>f.update());
-  drawCouple();
-  hearts.forEach(h=>h.update());
+  drawSky(); drawRiver(); buildings.forEach(b=>b.draw()); trees.forEach(t=>t.draw());
+  flowers.forEach(f=>f.update()); drawCouple(); sparkles.forEach(s=>s.update());
   requestAnimationFrame(animate);
 }
 animate();
 
 // ===== Buttons =====
-const yesBtn=document.getElementById("yesBtn");
-const noBtn=document.getElementById("noBtn");
+const yesBtn=document.getElementById("yesBtn"); const noBtn=document.getElementById("noBtn");
 noBtn.addEventListener("mouseover",()=>{noBtn.style.left=Math.random()*(window.innerWidth-120)+"px"; noBtn.style.top=Math.random()*(window.innerHeight-50)+"px";});
 
-// ===== Fireworks on Yes =====
-const fireworksCanvas=document.createElement("canvas"); document.body.appendChild(fireworksCanvas); fireworksCanvas.width=canvas.width; fireworksCanvas.height=canvas.height;
-fireworksCanvas.style.position="fixed"; fireworksCanvas.style.top=0; fireworksCanvas.style.left=0; fireworksCanvas.style.pointerEvents="none";
-const fctx=fireworksCanvas.getContext("2d");
-let particles=[];
+// ===== Fireworks =====
+const fwCanvas=document.createElement("canvas"); document.body.appendChild(fwCanvas);
+fwCanvas.width=canvas.width; fwCanvas.height=canvas.height;
+fwCanvas.style.position="fixed"; fwCanvas.style.top=0; fwCanvas.style.left=0; fwCanvas.style.pointerEvents="none";
+const fctx=fwCanvas.getContext("2d"); let particles=[];
 function createFirework(x,y){for(let i=0;i<150;i++){particles.push({x:x,y:y,speedX:(Math.random()-0.5)*8,speedY:(Math.random()-0.5)*8,life:100,color:`hsl(${Math.random()*360},100%,50%)`});} animateFireworks();}
-function animateFireworks(){fctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach((p,i)=>{p.x+=p.speedX;p.y+=p.speedY;p.life--; fctx.beginPath(); fctx.arc(p.x,p.y,2,0,2*Math.PI); fctx.fillStyle=p.color; fctx.fill(); if(p.life<=0) particles.splice(i,1);}); if(particles.length>0) requestAnimationFrame(animateFireworks);}
+function animateFireworks(){fctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach((p,i)=>{p.x+=p.speedX; p.y+=p.speedY; p.life--; fctx.beginPath(); fctx.arc(p.x,p.y,2,0,2*Math.PI); fctx.fillStyle=p.color; fctx.fill(); if(p.life<=0) particles.splice(i,1);}); if(particles.length>0) requestAnimationFrame(animateFireworks);}
 yesBtn.onclick=()=>{createFirework(canvas.width/2,canvas.height/2); setTimeout(()=>alert("💍 She said YES!"),1500);};
 
 // ===== Background Music =====
